@@ -10,7 +10,6 @@ export class AuthController {
     @route.post()
     async login(email: string, password: string) {
         const user: User | undefined = await db("User").where({ email, deleted:0 }).first()
-        console.log(user)
         if (user && await bcrypt.compare(password, user.password)) {
             const token = sign(<LoginUser>{ userId: user.id, role: user.role }, process.env.JWT_SECRET)
             return { token }

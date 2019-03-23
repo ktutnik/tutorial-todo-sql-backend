@@ -3,5 +3,6 @@ coverage
 yarn.lock
 build
 *.js
+!jest.config.js
 .env
 .DS_Store

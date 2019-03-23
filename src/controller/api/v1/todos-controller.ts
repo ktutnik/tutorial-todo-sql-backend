@@ -1,21 +1,13 @@
-import { HttpStatusError, middleware, route, bind } from "plumier"
+import { authorize, bind, route } from "plumier"
 
 import { db } from "../../../model/db"
 import { LoginUser, Todo } from "../../../model/domain"
 
 function ownerOrAdmin() {
-    return middleware.use({
-        execute: async invocation => {
-            const { state, parameters } = invocation.context
-            const user: LoginUser = state.user;
-            //parameters is requested method parameter values
-            const id: number = parameters![0];
-            const todo: Todo = await db("Todo").where({ id }).first()
-            if (user.role === "Admin" || todo && todo.userId === user.userId)
-                return invocation.proceed()
-            else
-                throw new HttpStatusError(401, "Unauthorized")
-        }
+    return authorize.custom(async info => {
+        const {role, parameters, user} = info;
+        const todo: Todo = await db("Todo").where({ id: parameters[0] }).first()
+        return role.some(x => x === "Admin") || todo && todo.userId === user.userId
     })
 }
 

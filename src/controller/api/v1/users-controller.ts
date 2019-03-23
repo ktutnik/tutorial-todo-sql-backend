@@ -1,25 +1,14 @@
 import bcrypt from "bcrypt"
-import { authorize, HttpStatusError, middleware, route } from "plumier"
+import { authorize, route } from "plumier"
 
 import { db } from "../../../model/db"
-import { LoginUser, User } from "../../../model/domain"
+import { User } from "../../../model/domain"
 
 
 function ownerOrAdmin() {
-    return middleware.use({
-        execute: async invocation => {
-            const { state, parameters } = invocation.context
-            //if no user then proceed. 
-            //this condition applied to public route POST /api/v1/users
-            if(!state.user) return invocation.proceed()
-            const loginUser: LoginUser = state.user;
-            const id: number = parameters![0];
-            const reqUser: User = await db("User").where({ id }).first()
-            if (loginUser.role === "Admin" || reqUser && reqUser.id === loginUser.userId)
-                return invocation.proceed()
-            else
-                throw new HttpStatusError(401, "Unauthorized")
-        }
+    return authorize.custom(async info => {
+        const { role, user, parameters } = info
+        return role.some(x => x === "Admin") || parameters[0] === user.userId
     })
 }
 

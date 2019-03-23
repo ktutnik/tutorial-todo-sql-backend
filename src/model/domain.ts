@@ -1,9 +1,11 @@
-import { domain, val, authorize } from "plumier";
-import { uniqueEmail } from "../validator/unique-email-validator";
+import { authorize, val } from "plumier"
+import reflect from "tinspector"
+
+import { uniqueEmail } from "../validator/unique-email-validator"
 
 export type UserRole = "User" | "Admin"
 
-@domain()
+@reflect.parameterProperties()
 export class Domain {
     constructor(
         @authorize.role("Machine")
@@ -15,7 +17,7 @@ export class Domain {
     ) { }
 }
 
-@domain()
+@reflect.parameterProperties()
 export class User extends Domain {
     constructor(
         @val.email()
@@ -28,7 +30,7 @@ export class User extends Domain {
     ) { super() }
 }
 
-@domain()
+@reflect.parameterProperties()
 export class Todo extends Domain {
     constructor(
         public todo: string,
@@ -39,7 +41,7 @@ export class Todo extends Domain {
     ) { super() }
 }
 
-@domain()
+@reflect.parameterProperties()
 export class LoginUser {
     constructor(
         public userId:number,
