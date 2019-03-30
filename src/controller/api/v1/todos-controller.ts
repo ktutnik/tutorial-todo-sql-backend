@@ -8,7 +8,7 @@ function ownerOrAdmin() {
         const {role, parameters, user} = info;
         const todo: Todo = await db("Todo").where({ id: parameters[0] }).first()
         return role.some(x => x === "Admin") || todo && todo.userId === user.userId
-    })
+    }, "Admin|Owner")
 }
 
 export class TodosController {
