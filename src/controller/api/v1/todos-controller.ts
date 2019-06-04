@@ -4,8 +4,7 @@ import { db } from "../../../model/db"
 import { LoginUser, Todo } from "../../../model/domain"
 
 function ownerOrAdmin() {
-    return authorize.custom(async info => {
-        const {role, parameters, user} = info;
+    return authorize.custom(async ({role, parameters, user}) => {
         const todo: Todo = await db("Todo").where({ id: parameters[0] }).first()
         return role.some(x => x === "Admin") || todo && todo.userId === user.userId
     }, "Admin|Owner")

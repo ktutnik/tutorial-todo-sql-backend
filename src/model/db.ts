@@ -1,7 +1,7 @@
 import knex from "knex"
 
 
-require("dotenv").load()
+require("dotenv").config()
 
 export const db = knex({
     client: "mysql2",

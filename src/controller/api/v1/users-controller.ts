@@ -6,8 +6,7 @@ import { User } from "../../../model/domain"
 
 
 function ownerOrAdmin() {
-    return authorize.custom(async info => {
-        const { role, user, parameters } = info
+    return authorize.custom(async ({ role, user, parameters }) => {
         return role.some(x => x === "Admin") || parameters[0] === user.userId
     }, "Admin|Owner")
 }
