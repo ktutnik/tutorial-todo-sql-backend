@@ -48,3 +48,13 @@ export class LoginUser {
         public role: UserRole
     ){}
 }
+
+@reflect.parameterProperties()
+export class Audit extends Domain {
+    constructor(
+        public userId:number | undefined,
+        public resource:string,
+        public action: "Read" | "Add" | "Modify" | "Delete" | "Unknown",
+        public status: "Success" | "Error"
+    ){ super() }
+}
