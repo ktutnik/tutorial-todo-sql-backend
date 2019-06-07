@@ -4,6 +4,7 @@ import reflect from "tinspector"
 import { uniqueEmail } from "../validator/unique-email-validator"
 
 export type UserRole = "User" | "Admin"
+export type AuditAction = "Read" | "Add" | "Modify" | "Delete" | "Unknown"
 
 @reflect.parameterProperties()
 export class Domain {
@@ -52,9 +53,10 @@ export class LoginUser {
 @reflect.parameterProperties()
 export class Audit extends Domain {
     constructor(
-        public userId:number | undefined,
+        public userId:number ,
         public resource:string,
-        public action: "Read" | "Add" | "Modify" | "Delete" | "Unknown",
-        public status: "Success" | "Error"
+        public action: AuditAction,
+        public status: "Success" | "Error",
+        public data:string
     ){ super() }
 }

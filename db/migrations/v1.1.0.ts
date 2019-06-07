@@ -6,10 +6,11 @@ export async function up(knex: Knex): Promise<any> {
         return trx.schema
             .createTable("Audit", t => {
                 baseTable(t, trx)
-                t.bigInteger("userId").nullable()
+                t.bigInteger("userId").unsigned().references("id").inTable("User")
                 t.string("resource")
                 t.string("action")
                 t.string("status")
+                t.string("data")
             })
     })
 };
