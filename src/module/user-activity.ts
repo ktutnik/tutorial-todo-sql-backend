@@ -8,16 +8,10 @@ import { db } from "../model/db";
 // ------------------------------- HELPER ------------------------------ //
 // --------------------------------------------------------------------- //
 
-const CensorshipMap = new Map<Class, (x: any) => any>([
+const CensorshipMap = new Map([
     [User, (x: User) => (<User>{ ...x, password: "*****", email: "*****" })]
 ])
 
-const AuditActionMap = new Map<string, AuditAction>([
-    ["get", "Read"],
-    ["post", "Add"],
-    ["put", "Modify"],
-    ["delete", "Delete"]
-])
 
 function censor(context: Context) {
     const parameters = context.parameters || []
@@ -28,12 +22,23 @@ function censor(context: Context) {
     })
 }
 
-function createAudit(context: Context, status: "Success" | "Error") {
+const AuditActionMap = new Map([
+    ["get", "Read"],
+    ["post", "Add"],
+    ["put", "Modify"],
+    ["delete", "Delete"]
+])
+
+function createAudit(context: Context) {
     const { route, state, method } = context
     const controller = route!.controller.name
     const resource = controller.substr(0, controller.lastIndexOf("Controller"))
-    const data = JSON.stringify(censor(context))
-    return new Audit(state.userId, resource, AuditActionMap.get(method.toLowerCase()) || "Unknown", status, data)
+    return <Audit>{
+        userId: state.user.userId,
+        resource,
+        action: AuditActionMap.get(method.toLowerCase()) || "Unknown",
+        data: JSON.stringify(censor(context))
+    }
 }
 
 // --------------------------------------------------------------------- //
@@ -43,13 +48,14 @@ function createAudit(context: Context, status: "Success" | "Error") {
 export class UserActivityMiddleware implements Middleware {
     async execute(next: Readonly<Invocation>): Promise<ActionResult> {
         if (next.context.route && next.context.state.user) {
+            const audit = createAudit(next.context)
             try {
                 const result = await next.proceed()
-                await db("Audit").insert(createAudit(next.context, "Success"))
+                await db("Audit").insert(<Audit>{...audit, status: "Success"})
                 return result
             }
             catch (e) {
-                await db("Audit").insert(createAudit(next.context, "Error"))
+                await db("Audit").insert(<Audit>{...audit, status: "Error"})
                 throw e;
             }
         }
